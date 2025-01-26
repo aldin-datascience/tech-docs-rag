@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import time
 import random
 import string
 from requests.auth import HTTPBasicAuth
@@ -113,7 +112,7 @@ st.sidebar.header("Upload Files")
 
 uploaded_files = st.sidebar.file_uploader(
     "Upload technical documentation",
-    type=["pdf", "md", "txt"],
+    type=["pdf", "md"],
     accept_multiple_files=True
 )
 
