@@ -8,7 +8,26 @@ This repository contains everything you need to set up a working FastAPI applica
 
 ---
 
-## 1. Install Homebrew (on Linux)
+## 1. Install Docker (on Linux)
+
+Run the following commands to set up Docker's apt repository:
+
+    sudo apt-get update
+    sudo apt-get install ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+
+    # To install the latest version, run:
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+## 2. Install Homebrew (on Linux)
 
 Run the following command to install Homebrew:
 
@@ -40,7 +59,7 @@ Run the following command to install Homebrew:
 
 ---
 
-## 2. Install vespa-cli
+## 3. Install vespa-cli
 
 Once Homebrew is set up, you can install the Vespa CLI by running:
 
@@ -48,12 +67,12 @@ Once Homebrew is set up, you can install the Vespa CLI by running:
 
 ---
 
-## 3. Run the Vespa Docker Container
+## 4. Run the Vespa Docker Container
 
 Use the following command to start the Vespa Docker container. Make sure to mount the `vespa` folder from this project directory into the container so we can deploy the Vespa app/schema from it.
 
     sudo docker run --detach --name vespa --hostname vespa-container \
-      --volume /path/to/project/tech-docs-rag/vespa:/app \
+      --volume /path/to/project/tech-docs-rag/vespa_config:/app \
       --publish 8080:8080 --publish 19071:19071 \
       vespaengine/vespa
 
@@ -73,7 +92,7 @@ Finally, deploy the application/schema with:
 
 ---
 
-## 4. Install Python Dependencies
+## 5. Install Python Dependencies
 
 To run the FastAPI application and the Streamlit demo, you must install all required Python packages. You can use either of the following commands:
 
@@ -85,7 +104,7 @@ or
 
 ---
 
-## 5. Run the FastAPI Application
+## 6. Run the FastAPI Application
 
 To start the FastAPI application, run:
 
@@ -93,7 +112,7 @@ To start the FastAPI application, run:
 
 ---
 
-## 6. Run the Streamlit Demo
+## 7. Run the Streamlit Demo
 
 Once the FastAPI application is running, you can launch the Streamlit demo (which depends on the FastAPI service) by running:
 
