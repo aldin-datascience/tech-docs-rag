@@ -50,9 +50,9 @@ async def process_file(file: UploadFile, authorized: bool = Depends(simple_auth)
         if file.content_type == "application/pdf":
             docs = load_pdf_doc_from_file(file)
             logger.info(f"Processed PDF file: {file.filename}")
-        elif file.content_type in ["text/markdown", "text/plain"]:
+        elif file.content_type in ["text/markdown"]:
             docs = load_markdown_doc_from_file(file)
-            logger.info(f"Processed Markdown/Plaintext file: {file.filename}")
+            logger.info(f"Processed Markdown file: {file.filename}")
         else:
             logger.error(f"Unsupported file type: {file.content_type}")
             raise HTTPException(status_code=400, detail="Unsupported file type.")
@@ -62,7 +62,9 @@ async def process_file(file: UploadFile, authorized: bool = Depends(simple_auth)
             raise HTTPException(status_code=400, detail="Failed to load document content.")
 
         # Save both the resource and its chunks into Vespa
-        save_to_vespa(resource=docs[0], resource_type=file.content_type)
+        for doc in docs:
+            save_to_vespa(resource=doc, resource_type=file.content_type)
+
         logger.info(f"Successfully saved {file.filename} to Vespa database.")
 
         return {

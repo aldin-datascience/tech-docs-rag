@@ -34,3 +34,8 @@ NUM_OF_CONTEXT_CHUNKS = 5
 SESSIONS_PATH = os.path.join(ROOT_DIR, "sessions/")
 
 TEMP_DIR = "/tmp/uploads"
+
+HEADERS_TO_SPLIT_ON = [
+    ("#", "Header 1"),
+    ("##", "Header 2"),
+]

@@ -42,11 +42,15 @@ def save_to_vespa(resource: Document, resource_type: str):
         resource_id = generate_deterministic_id(resource.page_content)
         logger.debug(f"Generated resource ID: {resource_id}")
 
-        resource_embedding = embedder.openai_embedding(resource.page_content)
-        logger.info("Generated embedding for resource.")
+        clean_resource = None
+        if resource_type == "application/pdf":
+            clean_resource = clean_document(resource)
+            resource_embedding = embedder.openai_embedding(clean_resource.page_content)
+            logger.info("Cleaned resource content.")
+        else:
+            resource_embedding = embedder.openai_embedding(resource.page_content)
 
-        clean_resource = clean_document(resource)
-        logger.info("Cleaned resource content.")
+        logger.info("Generated embedding for resource.")
 
         # Prepare resource record for insertion
         resource_record = {
@@ -55,7 +59,7 @@ def save_to_vespa(resource: Document, resource_type: str):
                 "resource_id": resource_id,
                 "resource_type": resource_type,
                 "raw_text": resource.page_content,
-                "cleaned_text": clean_resource.page_content,
+                "cleaned_text": clean_resource.page_content if clean_resource else resource.page_content,
                 "embedding": resource_embedding,
             }
         }
@@ -65,8 +69,9 @@ def save_to_vespa(resource: Document, resource_type: str):
         logger.info(f"Resource with ID {resource_id} inserted into Vespa.")
 
         # Process and insert chunks
-        chunks = chunk_document(clean_resource)
+        chunks = chunk_document(clean_resource if clean_resource else resource, resource_type)
         chunk_records = []
+
         for idx, chunk in enumerate(chunks):
             chunk_id = generate_deterministic_id(f"{resource_id}-{chunk.page_content}")
             chunk_embedding = embedder.openai_embedding(chunk.page_content)
@@ -75,7 +80,7 @@ def save_to_vespa(resource: Document, resource_type: str):
                 "fields": {
                     "chunk_id": chunk_id,
                     "resource_id": resource_id,
-                    "resource_type": resource.metadata.get("type", "Unknown"),
+                    "resource_type": resource_type,
                     "chunk_text": chunk.page_content,
                     "chunk_ordinal": idx,
                     "embedding": chunk_embedding,

@@ -43,10 +43,9 @@ def upload_file(file):
 
 def response_generator(prompt):
     """
-    Call the /process-query endpoint to get the chatbot's answer, then yield it word-by-word.
+    Call the /process-query endpoint to get the chatbot's answer and return the response.
     """
     try:
-        # Call FastAPI /process-query route with session_id and question
         response = requests.post(
             f"http://{FASTAPI_HOST}:{FASTAPI_PORT}/process-query/",
             json={"session_id": st.session_state.session_id, "question": prompt},
@@ -56,19 +55,16 @@ def response_generator(prompt):
         if response.status_code == 200:
             data = response.json()
             answer_text = data.get("answer", "")
+            # Save the response to session state
+            st.session_state.messages.append({"role": "assistant", "content": answer_text})
+            store_to_txt(SESSIONS_PATH)
+            return answer_text
         else:
-            # If there's an error, show the raw response
-            answer_text = f"Error: {response.text}"
-
-        # Output the answer in a "typewriter" style
-        for word in answer_text.split():
-            yield word + " "
-            time.sleep(0.05)
-
-        # Once the entire answer is printed, store the updated conversation to a text file
-        store_to_txt(SESSIONS_PATH)
+            st.error(f"Error: {response.text}")
+            return None
     except Exception as e:
-        yield f"Error generating response: {e}"
+        st.error(f"Error generating response: {e}")
+        return None
 
 def store_to_txt(save_path):
     """
@@ -145,7 +141,11 @@ if uploaded_files:
 # Display existing chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        # Render user input as plain text, assistant response as Markdown
+        if message["role"] == "assistant":
+            st.markdown(message["content"], unsafe_allow_html=True)
+        else:
+            st.write(message["content"])
 
 # Prompt for new user messages
 if prompt := st.chat_input("Type your query here..."):
@@ -154,14 +154,19 @@ if prompt := st.chat_input("Type your query here..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Assistant's response (streamed word-by-word)
+    # Assistant's response (render as Markdown with loading spinner)
     with st.chat_message("assistant"):
-        response = st.write_stream(response_generator(prompt))
+        # Create a placeholder for the response
+        placeholder = st.empty()
+        with st.spinner("Generating response..."):
+            # Show a temporary loading message
+            placeholder.markdown("_Loading..._", unsafe_allow_html=True)
 
-    # The final 'response' in this context is just the last item from `response_generator`
-    if isinstance(response, str):
-        # If the generator yielded a final string, store it
-        st.session_state.messages.append({"role": "assistant", "content": response})
-    else:
-        # If the generator only yielded partial strings, you may need additional handling
-        pass
+            # Generate the final response
+            response = response_generator(prompt)
+
+            # Update the placeholder with the final response
+            if response:
+                placeholder.markdown(response, unsafe_allow_html=True)
+            else:
+                placeholder.markdown("_An error occurred while generating the response._", unsafe_allow_html=True)
