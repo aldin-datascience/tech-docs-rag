@@ -14,6 +14,7 @@ setup(
         'python-multipart==0.0.20',
         'openai==1.60.0',
         'streamlit==1.41.1',
-        'python-dotenv==1.0.1'
+        'python-dotenv==1.0.1',
+        'Markdown==3.7'
     ],
 )
