@@ -136,3 +136,6 @@ Below is an example of local variables used for testing (replace the values acco
 
     API_USERNAME="YOUR_API_USERNAME"
     API_PASSWORD="YOUR_API_PASSWORD"
+
+    STREAMLIT_USERNAME="YOUR_STREAMLIT_USERNAME"
+    STREAMLIT_PASSWORD="YOUR_STREAMLIT_PASSWORD"
