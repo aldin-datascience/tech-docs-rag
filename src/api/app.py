@@ -25,32 +25,24 @@ class QueryPayload(BaseModel):
 async def process_file(file: UploadFile, authorized: bool = Depends(simple_auth)):
     """
     Endpoint to process file uploads and store their contents in the Vespa database.
-
-    This endpoint accepts a single file via form-data. Supported file types include:
-      - application/pdf
-      - text/markdown
-      - text/plain
-
-    **Request Body**
-    - `file`: The file to be uploaded. Must be one of the supported MIME types.
-
-    **Response**
-    - **200**:
-      Returns a JSON object with a success message, e.g.:
-      `{"message": "File my_file.pdf processed successfully."}`
-    - **400**:
-      Raised if the file type is unsupported or if the document content cannot be loaded.
-    - **500**:
-      Raised if any error occurs during processing or saving the file to Vespa.
     """
     logger.info(f"Received file upload request: {file.filename} with content type: {file.content_type}")
 
     try:
+        # Infer file type based on extension if Content-Type is octet-stream (general type for binary data)
+        if file.content_type == "application/octet-stream":
+            file_ext = os.path.splitext(file.filename)[1].lower()  # Get file extension
+            if file_ext == ".md":
+                file.content_type = "text/markdown"  # Treat as Markdown
+            else:
+                logger.error(f"Unsupported file type: {file_ext}")
+                raise HTTPException(status_code=400, detail="Unsupported file type.")
+
         # Determine file type and process accordingly
         if file.content_type == "application/pdf":
             docs = load_pdf_doc_from_file(file)
             logger.info(f"Processed PDF file: {file.filename}")
-        elif file.content_type in ["text/markdown"]:
+        elif file.content_type == "text/markdown":
             docs = load_markdown_doc_from_file(file)
             logger.info(f"Processed Markdown file: {file.filename}")
         else:
