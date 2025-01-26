@@ -123,7 +123,7 @@ Once the FastAPI application is running, you can launch the Streamlit demo (whic
 ## Environment Variables
 
 Before running any of the above, ensure you have set up all the environment variables as indicated in the `.env.example` file. 
-Set any API_USERNAME and API_PASSWORD of your choice.
+For FastAPI and Streamlit, set any credentials of your choice.
 Below is an example of local variables used for testing (replace the values accordingly):
 
     OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
