@@ -21,10 +21,10 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 
 
 # Load a PDF document from an uploaded file
-def load_pdf_doc_from_file(file: UploadFile) -> List[Document]:
+def load_pdf_doc_from_file(file: UploadFile, content_type) -> List[Document]:
     logger.info(f"Attempting to load PDF file: {file.filename}")
-    if file.content_type != "application/pdf":
-        logger.error(f"Invalid file type for {file.filename}. Expected 'application/pdf', got '{file.content_type}'.")
+    if content_type != "application/pdf":
+        logger.error(f"Invalid file type for {file.filename}. Expected 'application/pdf', got '{content_type}'.")
         raise HTTPException(status_code=400, detail="File must be a PDF.")
 
     file_path = os.path.join(TEMP_DIR, file.filename)
@@ -45,11 +45,11 @@ def load_pdf_doc_from_file(file: UploadFile) -> List[Document]:
 
 
 # Load a Markdown document from an uploaded file
-def load_markdown_doc_from_file(file: UploadFile) -> List[Document]:
+def load_markdown_doc_from_file(file: UploadFile, content_type) -> List[Document]:
     logger.info(f"Attempting to load Markdown file: {file.filename}")
-    if file.content_type not in ["text/markdown"]:
+    if content_type not in ["text/markdown"]:
         logger.error(
-            f"Invalid file type for {file.filename}. Expected 'text/markdown', got '{file.content_type}'.")
+            f"Invalid file type for {file.filename}. Expected 'text/markdown', got '{content_type}'.")
         raise HTTPException(status_code=400, detail="File must be a Markdown file.")
 
     file_path = os.path.join(TEMP_DIR, file.filename)

@@ -29,21 +29,24 @@ async def process_file(file: UploadFile, authorized: bool = Depends(simple_auth)
     logger.info(f"Received file upload request: {file.filename} with content type: {file.content_type}")
 
     try:
+        inferred_content_type = file.content_type
         # Infer file type based on extension if Content-Type is octet-stream (general type for binary data)
-        if file.content_type == "application/octet-stream":
+        if inferred_content_type == "application/octet-stream":
             file_ext = os.path.splitext(file.filename)[1].lower()  # Get file extension
             if file_ext == ".md":
-                file.content_type = "text/markdown"  # Treat as Markdown
+                inferred_content_type = "text/markdown"
+            elif file_ext == ".pdf":
+                inferred_content_type = "application/pdf"
             else:
                 logger.error(f"Unsupported file type: {file_ext}")
                 raise HTTPException(status_code=400, detail="Unsupported file type.")
 
         # Determine file type and process accordingly
-        if file.content_type == "application/pdf":
-            docs = load_pdf_doc_from_file(file)
+        if inferred_content_type == "application/pdf":
+            docs = load_pdf_doc_from_file(file, content_type=inferred_content_type)
             logger.info(f"Processed PDF file: {file.filename}")
-        elif file.content_type == "text/markdown":
-            docs = load_markdown_doc_from_file(file)
+        elif inferred_content_type == "text/markdown":
+            docs = load_markdown_doc_from_file(file, content_type=inferred_content_type)
             logger.info(f"Processed Markdown file: {file.filename}")
         else:
             logger.error(f"Unsupported file type: {file.content_type}")
@@ -55,7 +58,7 @@ async def process_file(file: UploadFile, authorized: bool = Depends(simple_auth)
 
         # Save both the resource and its chunks into Vespa
         for doc in docs:
-            save_to_vespa(resource=doc, resource_type=file.content_type)
+            save_to_vespa(resource=doc, resource_type=inferred_content_type)
 
         logger.info(f"Successfully saved {file.filename} to Vespa database.")
 
