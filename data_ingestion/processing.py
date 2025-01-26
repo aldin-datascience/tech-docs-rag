@@ -8,6 +8,11 @@ import re
 from project_config.settings import TEMP_DIR
 from project_config.logger import get_logger
 
+import nltk
+
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
+
 # Initialize logger
 logger = get_logger(__name__, log_file="document_processing.log")
 
